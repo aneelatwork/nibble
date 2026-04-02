@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,42 +22,24 @@
 
 #include <cstddef>
 
-namespace raks::dtype::nibble
+namespace raks::dtype
 {
-inline constexpr int bit_size = 4;
 
-class lower
+class nibble
 {
 public:
-    static std::byte const bit_mask = static_cast< std::byte >( 0x0f );
+    static constexpr int bit_size = 4;
+    static constexpr int int_base = 10;
+    static constexpr std::byte const bit_mask = ( std::byte )0x0f;
 
-    explicit lower( char hex );
+    explicit nibble( char hex );
+    explicit nibble( int number );
     std::byte get_impl() { return value; }
+    explicit operator char();
+    explicit operator int();
 
 private:
     std::byte value;
 };
 
-class upper
-{
-public:
-    static std::byte const bit_mask = static_cast< std::byte >( 0xf0 );
-
-    explicit upper( char hex );
-    std::byte get_impl() { return value; }
-
-private:
-    std::byte value;
-};
-
-class pair
-{
-public:
-    pair( upper upper_nibble, lower lower_nibble );
-    std::byte get_impl() { return value; }
-
-private:
-    std::byte value;
-};
-
-} // namespace raks::dtype::nibble
+} // namespace raks::dtype

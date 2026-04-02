@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -39,24 +39,20 @@ std::byte encode( char hex )
     {
         return static_cast< std::byte >( hex - 'A' + ten );
     }
-    return static_cast< std::byte >( hex ) & raks::dtype::nibble::lower::bit_mask;
+    return static_cast< std::byte >( hex ) & raks::dtype::nibble::bit_mask;
 }
 
 } // namespace
 
-namespace raks::dtype::nibble
+namespace raks::dtype
 {
 
-lower::lower( char hex )
-    : value( encode( hex ) )
+nibble::nibble( char hex )
+: value( encode( hex ) )
 {}
 
-upper::upper( char hex )
-    : value( encode( hex ) << bit_size )
+nibble::nibble( int number )
+: value( static_cast< std::byte >( number % int_base ) )
 {}
 
-pair::pair( upper upper_nibble, lower lower_nibble )
-    : value( upper_nibble.get_impl() | lower_nibble.get_impl() )
-{}
-
-} // namespace raks::dtype::nibble
+} // namespace raks::dtype

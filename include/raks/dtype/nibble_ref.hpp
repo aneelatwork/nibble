@@ -20,38 +20,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <cstddef>
-#include <utility>
-
+#include <raks/dtype/nibble.hpp>
 namespace raks::dtype
 {
-
-class nibble
+class nibble_ref
 {
 public:
-    static constexpr int bit_size = 4;
-    static constexpr int int_base = 10;
-    static constexpr std::byte const bit_mask = ( std::byte )0x0f;
-
-    static nibble from_impl( std::byte impl ) { return nibble( impl ); }
-    explicit nibble( char hex );
-    explicit nibble( int number );
-    [[nodiscard]] std::byte get_impl() const { return value; }
-    explicit operator char() const;
-    explicit operator int() const;
-
-    template< typename self_type >
-    auto get_impl_ptr( this self_type&& self ) -> decltype( auto )
-    {
-        return &std::forward_like< decltype( self ) >( self.value );
-    }
-
-private:
-    explicit nibble( std::byte impl )
-    : value( impl )
+    explicit( false ) nibble_ref( nibble& ref )
+    : ptr( ref.get_impl_ptr() )
+    , isHigh( false )
     {}
 
-    std::byte value;
+    explicit( false ) nibble_ref( std::byte* const ptr, bool isHigh )
+    : ptr( ptr )
+    , isHigh( isHigh )
+    {}
+
+    explicit( false ) operator nibble()
+    {
+        return nibble::from_impl(
+          isHigh ? *ptr >> nibble::bit_size : *ptr & nibble::bit_mask
+        );
+    }
+
+    nibble_ref& operator=( nibble const& rval )
+    {
+        if( isHigh )
+        {
+            *ptr = ( *ptr & nibble::bit_mask ) |
+                   ( rval.get_impl() << nibble::bit_size );
+        }
+        else
+        {
+            *ptr = ( *ptr & ( ~nibble::bit_mask ) ) | ( rval.get_impl() );
+        }
+        return *this;
+    }
+
+    nibble_ref( nibble_ref& ) = delete;
+    nibble_ref( nibble_ref&& ) = delete;
+    nibble_ref& operator=( nibble_ref& ) = delete;
+    nibble_ref& operator=( nibble_ref&& ) = delete;
+    ~nibble_ref() = default;
+
+private:
+    std::byte* const ptr;
+    bool const isHigh;
 };
 
 } // namespace raks::dtype

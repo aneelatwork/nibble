@@ -20,10 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#ifndef __RAKS_NIBBLE_NIBBLE_DEFINED__
+#define __RAKS_NIBBLE_NIBBLE_DEFINED__
+
 #include <cstddef>
 #include <utility>
 
-namespace raks::dtype
+namespace raks::nibble
 {
 
 class nibble
@@ -54,4 +57,6 @@ private:
     std::byte value;
 };
 
-} // namespace raks::dtype
+} // namespace raks::nibble
+
+#endif

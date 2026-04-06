@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "raks/dtype/nibble.hpp"
+#include "raks/nibble/nibble.hpp"
 #include <cstddef>
 namespace
 {
@@ -39,12 +39,12 @@ std::byte encode( char hex )
     {
         return static_cast< std::byte >( hex - 'A' + ten );
     }
-    return static_cast< std::byte >( hex ) & raks::dtype::nibble::bit_mask;
+    return static_cast< std::byte >( hex ) & raks::nibble::nibble::bit_mask;
 }
 
 } // namespace
 
-namespace raks::dtype
+namespace raks::nibble
 {
 
 nibble::nibble( char hex )
@@ -55,4 +55,4 @@ nibble::nibble( int number )
 : value( static_cast< std::byte >( number % int_base ) )
 {}
 
-} // namespace raks::dtype
+} // namespace raks::nibble

@@ -20,12 +20,11 @@ TEST( NibbleTest, FromInteger )
 TEST( NibbleRefTest, RValue )
 {
     auto testval = std::byte( 0 );
-    auto ref1 = raks::nibble::iterator_impl::ref( &testval, false );
+    auto ref1 = raks::nibble::iterator_impl::reference( &testval, false );
+    auto ref2 = raks::nibble::iterator_impl::reference( &testval, true );
     ref1 = raks::nibble::nibble( 'A' );
-    EXPECT_EQ( ( std::byte )0x0a, ( ( raks::nibble::nibble )ref1 ).get_impl() );
-
-    auto ref2 = raks::nibble::iterator_impl::ref( &testval, true );
     ref2 = raks::nibble::nibble( '5' );
+    EXPECT_EQ( ( std::byte )0x0a, ( ( raks::nibble::nibble )ref1 ).get_impl() );
     EXPECT_EQ( ( std::byte )0x05, ( ( raks::nibble::nibble )ref2 ).get_impl() );
 }
 

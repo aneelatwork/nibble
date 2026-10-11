@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __RAKS_NIBBLE_NIBBLE_DEFINED__
-#define __RAKS_NIBBLE_NIBBLE_DEFINED__
+#ifndef RAKS_NIBBLE_NIBBLE_INCLUDED
+#define RAKS_NIBBLE_NIBBLE_INCLUDED
 
 #include <cstddef>
 #include <utility>
@@ -34,9 +34,14 @@ class nibble
 public:
     static constexpr int bit_size = 4;
     static constexpr int int_base = 10;
-    static constexpr std::byte const bit_mask = ( std::byte )0x0f;
+    static constexpr std::byte const bit_mask =
+      static_cast< std::byte >( 0x0f );
 
     static nibble from_impl( std::byte impl ) { return nibble( impl ); }
+    static ptrdiff_t byte_position( ptrdiff_t nibble_position )
+    {
+        return ( ( nibble_position - 1 ) * 2 ) + 1;
+    }
     explicit nibble( char hex );
     explicit nibble( int number );
     [[nodiscard]] std::byte get_impl() const { return value; }

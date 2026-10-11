@@ -20,26 +20,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __RAKS_NIBBLE_ITERATOR_DEFINED__
-#define __RAKS_NIBBLE_ITERATOR_DEFINED__
+#ifndef RAKS_NIBBLE_ITERATOR_INCLUDED
+#define RAKS_NIBBLE_ITERATOR_INCLUDED
 
 #include <raks/nibble/nibble.hpp>
 #include <cstddef>
 #include <type_traits>
 namespace raks::nibble
 {
-namespace iterator_impl
+namespace ref_impl
 {
-
+template< typename byte_type >
+    requires std::is_same_v< byte_type, std::byte > ||
+             std::is_same_v< byte_type, std::byte const >
 class ref
 {
 public:
-    explicit( false ) ref( nibble& ref )
-    : ptr( ref.get_impl_ptr() )
+    using impl_ptr_type = byte_type*;
+
+    explicit( false ) ref( nibble& nibble_ref )
+    : ptr( nibble_ref.get_impl_ptr() )
     , is_high( false )
     {}
 
-    explicit( false ) ref( std::byte* const ptr, bool is_high )
+    explicit( false ) ref( byte_type* const ptr, bool is_high )
     : ptr( ptr )
     , is_high( is_high )
     {}
@@ -51,6 +55,32 @@ public:
         );
     }
 
+    ref( ref& ) = default;
+    ref( ref&& ) = default;
+    ref& operator=( ref const& ) = delete;
+    ref& operator=( ref&& ) = delete;
+    ~ref() = default;
+
+protected:
+    byte_type* const ptr;
+    bool const is_high;
+};
+
+} // namespace ref_impl
+
+namespace iterator_impl
+{
+using const_reference = raks::nibble::ref_impl::ref< std::byte const >;
+
+class reference : public raks::nibble::ref_impl::ref< std::byte >
+{
+public:
+    using ref_impl::ref< std::byte >::ref;
+
+    explicit( false ) reference( nibble& nibble_ref )
+    : raks::nibble::ref_impl::ref< std::byte >( nibble_ref )
+    {}
+
     nibble operator=( nibble rval )
     {
         if( is_high )
@@ -60,34 +90,29 @@ public:
         }
         else
         {
-            *ptr = ( *ptr & ( ~nibble::bit_mask ) ) | ( rval.get_impl() );
+            *ptr = ( *ptr & ( ~nibble::bit_mask ) ) | rval.get_impl();
         }
         return rval;
     }
-
-    ref( ref& ) = default;
-    ref( ref&& ) = default;
-    ref& operator=( ref const& ) = delete;
-    ref& operator=( ref&& ) = delete;
-    ~ref() = default;
-
-private:
-    std::byte* const ptr;
-    bool const is_high;
 };
 
-template< typename nibble_type >
-    requires std::is_same_v< nibble_type, raks::nibble::nibble > ||
-             std::is_same_v< nibble_type, raks::nibble::nibble const >
+template< typename byte_type >
+    requires std::is_same_v< byte_type, std::byte > ||
+             std::is_same_v< byte_type, std::byte const >
 class iterator
 {
 public:
-    iterator( std::byte* const ptr, bool is_high )
+    iterator( byte_type* const ptr, bool const is_high )
     : ptr( ptr )
     , is_high( is_high )
     {}
 
-    nibble operator*() { return ( nibble )ref{ ptr, is_high }; }
+    nibble operator*()
+    {
+        return static_cast< nibble >(
+          raks::nibble::iterator_impl::const_reference{ ptr, is_high }
+        );
+    }
     nibble operator[]( std::ptrdiff_t const index )
     {
         auto copy = *this;
@@ -159,30 +184,35 @@ protected:
     }
 
     bool get_is_high() { return is_high; }
-    std::byte* get_ptr() { return ptr; }
+    byte_type* get_ptr() { return ptr; }
 
 private:
-    std::byte* ptr;
+    byte_type* ptr;
     bool is_high;
 };
 } // namespace iterator_impl
 
-using const_iterator = iterator_impl::iterator< nibble const >;
+using const_iterator = iterator_impl::iterator< std::byte const >;
 
-class iterator : public iterator_impl::iterator< nibble >
+class iterator : public iterator_impl::iterator< std::byte >
 {
+private:
+    using base_type = iterator_impl::iterator< std::byte >;
+
 public:
+    using base_type::base_type;
+
     explicit( false ) operator const_iterator()
     {
         return const_iterator{ get_ptr(), get_is_high() };
     }
 
-    iterator_impl::ref operator*()
+    iterator_impl::reference operator*()
     {
-        return iterator_impl::ref{ get_ptr(), get_is_high() };
+        return iterator_impl::reference{ get_ptr(), get_is_high() };
     }
 
-    iterator_impl::ref operator[]( std::ptrdiff_t const index )
+    iterator_impl::reference operator[]( std::ptrdiff_t const index )
     {
         auto copy = *this;
         copy.change( index );
@@ -192,4 +222,4 @@ public:
 
 } // namespace raks::nibble
 
-#endif //__RAKS_NIBBLE_ITERATOR_DEFINED__
+#endif // RAKS_NIBBLE_ITERATOR_INCLUDED

@@ -23,49 +23,92 @@
 #ifndef RAKS_NIBBLE_VECTOR_INCLUDED
 #define RAKS_NIBBLE_VECTOR_INCLUDED
 
+#include <cstddef>
+#include <iterator>
 #include <raks/nibble/iterator.hpp>
 #include <vector>
 
-template<>
-class std::vector< raks::nibble::nibble > : public std::vector< std::byte >
+namespace raks::nibble
+{
+
+struct bcd_size
+{
+    unsigned size;
+    [[nodiscard]] unsigned get_byte_size() const
+    {
+        return ( ( size - 1 ) / 2 ) + 1;
+    }
+};
+
+class bcd
 {
 public:
-    using base_type = std::vector< std::byte >;
     using const_reference = raks::nibble::nibble;
     using reference = raks::nibble::iterator_impl::reference;
     using const_iterator = raks::nibble::const_iterator;
     using iterator = raks::nibble::iterator;
-    using base_type::base_type;
 
-    iterator begin() { return { base_type::data(), false }; }
+    bcd() = default;
+
+    iterator begin() { return { impl.data(), false }; }
 
     iterator end()
     {
-        return {
-          base_type::data() + base_type::size(), 0 != ( base_type::size() % 2 )
-        };
+        return { impl.data() + impl.size(), 0 != ( impl.size() % 2 ) };
+    }
+
+    [[nodiscard]] auto rbegin() { return std::make_reverse_iterator( end() ); }
+
+    [[nodiscard]] auto rend() { return std::make_reverse_iterator( begin() ); }
+
+    [[nodiscard]] auto rbegin() const
+    {
+        return std::make_reverse_iterator( cend() );
+    }
+
+    [[nodiscard]] auto rend() const
+    {
+        return std::make_reverse_iterator( cbegin() );
     }
 
     [[nodiscard]] const_iterator cbegin() const
     {
-        return { base_type::data(), false };
+        return { impl.data(), false };
     }
 
     [[nodiscard]] const_iterator cend() const
     {
-        return {
-          base_type::data() + base_type::size(), 0 != ( base_type::size() % 2 )
-        };
+        return { impl.data() + impl.size(), 0 != ( impl.size() % 2 ) };
     }
 
     [[nodiscard]] const_iterator begin() const { return cbegin(); }
 
     [[nodiscard]] const_iterator end() const { return cend(); }
 
+    [[nodiscard]] auto crbegin() const
+    {
+        return std::make_reverse_iterator( cend() );
+    }
+
+    [[nodiscard]] auto crend() const
+    {
+        return std::make_reverse_iterator( cbegin() );
+    }
+
+    bcd( unsigned long value, bcd_size size )
+    : impl( size.get_byte_size() )
+    , is_high( true )
+    {
+        for( auto ni = rbegin(); ni != rend(); ni++ )
+        {
+            *ni = raks::nibble::nibble( value );
+        }
+    }
+
     reference at( std::ptrdiff_t const index )
     {
         return {
-          base_type::data() + raks::nibble::nibble::byte_position( index ),
+          impl.data() + raks::nibble::nibble::byte_position( index ),
           0 != index % 2
         };
     }
@@ -74,7 +117,7 @@ public:
     {
         return static_cast< const_reference >(
           raks::nibble::iterator_impl::const_reference{
-            base_type::data() + raks::nibble::nibble::byte_position( index ),
+            impl.data() + raks::nibble::nibble::byte_position( index ),
             0 != index % 2,
           }
         );
@@ -87,7 +130,31 @@ public:
         return at( index );
     }
 
+    void push_back( nibble nibble )
+    {
+        if( is_high )
+        {
+            impl.push_back( nibble.get_impl() );
+        }
+        else
+        {
+            std::byte back =
+              impl.back() | ( nibble.get_impl() << nibble::bit_size );
+        }
+        is_high = !is_high;
+    }
+
+    bcd_size size()
+    {
+        return bcd_size{
+          ( static_cast< unsigned >( impl.size() ) * 2 ) - ( is_high ? 0 : 1 ),
+        };
+    }
+
 private:
+    std::vector< std::byte > impl;
+    bool is_high;
 };
+} // namespace raks::nibble
 
 #endif // !RAKS_NIBBLE_VECTOR_INCLUDED

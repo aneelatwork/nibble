@@ -51,7 +51,7 @@ nibble::nibble( char hex )
 : value( encode( hex ) )
 {}
 
-nibble::nibble( int number )
+nibble::nibble( unsigned long number )
 : value( static_cast< std::byte >( number % int_base ) )
 {}
 

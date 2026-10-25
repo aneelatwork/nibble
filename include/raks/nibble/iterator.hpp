@@ -23,6 +23,7 @@
 #ifndef RAKS_NIBBLE_ITERATOR_INCLUDED
 #define RAKS_NIBBLE_ITERATOR_INCLUDED
 
+#include <iterator>
 #include <raks/nibble/nibble.hpp>
 #include <cstddef>
 #include <type_traits>
@@ -38,8 +39,9 @@ class ref
 public:
     using impl_ptr_type = byte_type*;
 
-    explicit( false ) ref( nibble& nibble_ref )
-    : ptr( nibble_ref.get_impl_ptr() )
+    template< typename nibble_type >
+    explicit( false ) ref( nibble_type& nibble )
+    : ptr( nibble.get_impl_ptr() )
     , is_high( false )
     {}
 
@@ -62,8 +64,13 @@ public:
     ~ref() = default;
 
 protected:
-    byte_type* const ptr;
-    bool const is_high;
+    bool get_is_high() { return is_high; }
+
+    byte_type* get_ptr() { return ptr; }
+
+private:
+    byte_type* const ptr; // NOLINT
+    bool const is_high;   // NOLINT
 };
 
 } // namespace ref_impl
@@ -81,19 +88,22 @@ public:
     : raks::nibble::ref_impl::ref< std::byte >( nibble_ref )
     {}
 
-    nibble operator=( nibble rval )
+    nibble set( nibble rval )
     {
-        if( is_high )
+        if( get_is_high() )
         {
-            *ptr = ( *ptr & nibble::bit_mask ) |
-                   ( rval.get_impl() << nibble::bit_size );
+            *get_ptr() = ( *get_ptr() & nibble::bit_mask ) |
+                         ( rval.get_impl() << nibble::bit_size );
         }
         else
         {
-            *ptr = ( *ptr & ( ~nibble::bit_mask ) ) | rval.get_impl();
+            *get_ptr() =
+              ( *get_ptr() & ( ~nibble::bit_mask ) ) | rval.get_impl();
         }
         return rval;
     }
+
+    nibble operator=( nibble rval ) { return set( rval ); }
 };
 
 template< typename byte_type >
@@ -102,18 +112,22 @@ template< typename byte_type >
 class iterator
 {
 public:
+    using iterator_concept = std::contiguous_iterator_tag;
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = nibble;
+    using difference_type = std::ptrdiff_t;
+    using pointer = byte_type*;
+    using reference =
+      std::conditional_t< std::is_const_v< byte_type >, nibble, reference >;
+
     iterator( byte_type* const ptr, bool const is_high )
     : ptr( ptr )
     , is_high( is_high )
     {}
 
-    nibble operator*()
-    {
-        return static_cast< nibble >(
-          raks::nibble::iterator_impl::const_reference{ ptr, is_high }
-        );
-    }
-    nibble operator[]( std::ptrdiff_t const index )
+    reference operator*() { return reference( ptr, is_high ); }
+
+    reference operator[]( std::ptrdiff_t const index )
     {
         auto copy = *this;
         copy.change( index );
@@ -148,9 +162,8 @@ public:
 
     iterator operator+=( std::ptrdiff_t value )
     {
-        auto result = iterator{ ptr, is_high };
         change( value );
-        return result;
+        return *this;
     }
 
     iterator operator-=( std::ptrdiff_t value )
@@ -159,7 +172,7 @@ public:
         return *this;
     }
 
-    iterator( iterator& ) = default;
+    iterator( iterator const& ) = default;
     iterator( iterator&& ) = default;
     iterator& operator=( iterator const& ) = default;
     iterator& operator=( iterator&& ) = default;
@@ -173,7 +186,7 @@ protected:
         {
             ++value;
         }
-        ptr += ( ( value + direction ) / 2 ) + direction;
+        ptr += ( ( value + direction ) / 2 ) + direction; // NOLINT
         is_high = 0 != ( value % 2 );
     }
 
@@ -207,12 +220,12 @@ public:
         return const_iterator{ get_ptr(), get_is_high() };
     }
 
-    iterator_impl::reference operator*()
+    iterator_impl::reference operator*() // NOLINT
     {
         return iterator_impl::reference{ get_ptr(), get_is_high() };
     }
 
-    iterator_impl::reference operator[]( std::ptrdiff_t const index )
+    iterator_impl::reference operator[]( std::ptrdiff_t const index ) // NOLINT
     {
         auto copy = *this;
         copy.change( index );

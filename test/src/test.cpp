@@ -13,8 +13,8 @@ TEST( NibbleTest, FromCharacters )
 
 TEST( NibbleTest, FromInteger )
 {
-    EXPECT_EQ( ( std::byte )0x05, raks::nibble::nibble( 135 ).get_impl() );
-    EXPECT_EQ( ( std::byte )0x09, raks::nibble::nibble( 2009 ).get_impl() );
+    EXPECT_EQ( ( std::byte )0x05, raks::nibble::nibble{ 135UL }.get_impl() );
+    EXPECT_EQ( ( std::byte )0x09, raks::nibble::nibble{ 2009UL }.get_impl() );
 }
 
 TEST( NibbleRefTest, RValue )
@@ -27,6 +27,8 @@ TEST( NibbleRefTest, RValue )
     EXPECT_EQ( ( std::byte )0x0a, ( ( raks::nibble::nibble )ref1 ).get_impl() );
     EXPECT_EQ( ( std::byte )0x05, ( ( raks::nibble::nibble )ref2 ).get_impl() );
 }
+
+TEST( NibbleVectorTest, Container ) {}
 
 } // namespace
 

@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "raks/nibble/nibble.hpp"
+#include "raks/dt/nibble.hpp"
 #include <cstddef>
 namespace
 {
@@ -39,12 +39,12 @@ std::byte encode( char hex )
     {
         return static_cast< std::byte >( hex - 'A' + ten );
     }
-    return static_cast< std::byte >( hex ) & raks::nibble::nibble::bit_mask;
+    return static_cast< std::byte >( hex ) & raks::dt::nibble::bit_mask;
 }
 
 } // namespace
 
-namespace raks::nibble
+namespace raks::dt
 {
 
 nibble::nibble( char hex )
@@ -55,4 +55,16 @@ nibble::nibble( unsigned long number )
 : value( static_cast< std::byte >( number % int_base ) )
 {}
 
-} // namespace raks::nibble
+nibble::operator char() const
+{
+    char const cast_value = static_cast< char >( this->value );
+    char const min = 0;
+    char const max_dec = 9;
+    char const max_hex = 15;
+    if( max_dec >= cast_value )
+    {
+        return static_cast< char >( '0' + cast_value );
+    }
+    return static_cast< char >( 'A' + cast_value - int_base );
+}
+} // namespace raks::dt

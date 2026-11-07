@@ -20,13 +20,14 @@
 // out of or in connection with the software or the use or other dealings in the
 // software.
 
-#ifndef RAKS_NIBBLE_NIBBLE_INCLUDED
-#define RAKS_NIBBLE_NIBBLE_INCLUDED
+#ifndef RAKS_DT_NIBBLE_INCLUDED
+#define RAKS_DT_NIBBLE_INCLUDED
 
+#include <compare>
 #include <cstddef>
 #include <type_traits>
 
-namespace raks::nibble
+namespace raks::dt
 {
 
 class nibble
@@ -42,12 +43,15 @@ public:
     {
         return ( ( nibble_position - 1 ) / 2 ) + 1;
     }
-    explicit nibble( char hex );
     explicit nibble( unsigned long number );
+    explicit nibble( char hex );
+
     [[nodiscard]] std::byte get_impl() const { return value; }
     explicit operator char() const;
-    explicit operator int() const;
-
+    explicit operator unsigned long() const
+    {
+        return static_cast< unsigned long >( value );
+    }
     auto* get_impl_ptr( this auto&& self )
         requires( !std::is_rvalue_reference_v< decltype( self ) > )
     {
@@ -61,6 +65,23 @@ public:
     nibble& operator=( nibble&& ) = default;
     ~nibble() = default;
 
+    friend std::strong_ordering operator<=>(
+      nibble const& lhs, nibble const& rhs
+    )
+    {
+        return lhs.get_impl() <=> rhs.get_impl();
+    }
+
+    friend bool operator==( nibble const& lhs, nibble const& rhs )
+    {
+        return lhs.get_impl() == rhs.get_impl();
+    }
+
+    friend bool operator!=( nibble const& lhs, nibble const& rhs )
+    {
+        return lhs.get_impl() != rhs.get_impl();
+    }
+
 private:
     explicit nibble( std::byte impl )
     : value( impl )
@@ -69,6 +90,6 @@ private:
     std::byte value;
 };
 
-} // namespace raks::nibble
+} // namespace raks::dt
 
-#endif // !RAKS_NIBBLE_NIBBLE_INCLUDED
+#endif // !RAKS_DT_NIBBLE_INCLUDED

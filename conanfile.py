@@ -60,6 +60,6 @@ class gtestRecipe(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = ["nibble"]
-        self.cpp_info.components["libgtest"].set_property(
+        self.cpp_info.set_property(
             "cmake_target_name", "Nibble::nibble"
         )

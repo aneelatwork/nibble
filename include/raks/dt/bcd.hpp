@@ -23,6 +23,12 @@
 #ifndef RAKS_NIBBLE_BCD_INCLUDED
 #define RAKS_NIBBLE_BCD_INCLUDED
 
+template< typename T >
+concept ByteIterator =
+  std::bidirectional_iterator< T > &&
+  ( std::same_as< std::iter_value_t< T >, std::byte > ||
+    std::same_as< std::iter_value_t< T >, char > ||
+    std::same_as< std::iter_value_t< T >, unsigned char > );
 #include <raks/dt/nibble_proxy.hpp>
 
 #include <vector>

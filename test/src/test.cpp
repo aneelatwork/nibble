@@ -1,4 +1,4 @@
-#include <raks/dt/nibble_proxy.hpp>
+#include <raks/nibble/proxy.hpp>
 
 #include <array>
 #include <cstddef>

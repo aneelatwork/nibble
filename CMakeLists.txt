@@ -22,7 +22,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_D
 target_sources(${CMAKE_PROJECT_NAME}
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/raks/dt/nibble.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/raks/dt/nibble_proxy.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/raks/nibble/proxy.hpp
         #${CMAKE_CURRENT_SOURCE_DIR}/include/raks/nibble/bcd.hpp
 
     PRIVATE

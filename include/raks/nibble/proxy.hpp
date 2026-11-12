@@ -20,20 +20,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RAKS_DT_NIBBLE_PROXY_INCLUDED
-#define RAKS_DT_NIBBLE_PROXY_INCLUDED
+#ifndef RAKS_NIBBLE_PROXY_INCLUDED
+#define RAKS_NIBBLE_PROXY_INCLUDED
 
 #include <raks/dt/nibble.hpp>
+#include <concepts>
 #include <type_traits>
 
-namespace raks::dt
-{
-namespace private_proxy
+namespace raks::nibble
 {
 
 template< typename byte_type >
-    requires std::is_same_v< byte_type, std::byte > ||
-             std::is_same_v< byte_type, std::byte const >
+concept basal = std::is_same_v< byte_type, std::byte > ||
+                std::is_same_v< byte_type, std::byte const >;
+
+template< raks::nibble::basal byte_type >
+using value_type = std::conditional_t<
+  std::is_const_v< byte_type >,
+  raks::dt::nibble const,
+  raks::dt::nibble >;
+
+namespace private_proxy
+{
+
+template< raks::nibble::basal byte_type >
 class base
 {
 public:
@@ -54,22 +64,15 @@ private:
     bool is_high;
 };
 
-template< typename byte_type >
-    requires std::is_same_v< byte_type, std::byte > ||
-             std::is_same_v< byte_type, std::byte const >
+template< raks::nibble::basal byte_type >
 class base_ptr;
 
-template< typename byte_type >
-    requires std::is_same_v< byte_type, std::byte > ||
-             std::is_same_v< byte_type, std::byte const >
+template< raks::nibble::basal byte_type >
 class base_ref : public base< byte_type >
 {
 public:
     using base_type = base< byte_type >;
-    using value_type = std::conditional_t<
-      std::is_const_v< byte_type >,
-      raks::dt::nibble const,
-      raks::dt::nibble >;
+    using value_type = raks::nibble::value_type< byte_type >;
 
     using pointer = base_ptr< byte_type >;
     using base< byte_type >::base;
@@ -78,11 +81,12 @@ public:
     : base_type( nibble.get_impl_ptr(), false )
     {}
 
-    explicit( false ) operator nibble() const
+    explicit( false ) operator raks::dt::nibble() const
     {
-        return nibble::from_impl(
-          base_type::get_is_high() ? *base_type::get_ptr() >> nibble::bit_size
-                                   : *base_type::get_ptr() & nibble::bit_mask
+        return raks::dt::nibble::from_impl(
+          base_type::get_is_high()
+            ? *base_type::get_ptr() >> raks::dt::nibble::bit_size
+            : *base_type::get_ptr() & raks::dt::nibble::bit_mask
         );
     }
 
@@ -104,9 +108,7 @@ public:
         return set( rval );
     }
 
-    template< typename rhs_byte_type >
-        requires std::is_same_v< rhs_byte_type, std::byte > ||
-                 std::is_same_v< rhs_byte_type, std::byte const >
+    template< raks::nibble::basal rhs_byte_type >
     std::strong_ordering operator<=>(
       base_ref< rhs_byte_type > const& rhs
     ) const
@@ -115,18 +117,14 @@ public:
                static_cast< raks::dt::nibble >( rhs );
     }
 
-    template< typename rhs_byte_type >
-        requires std::is_same_v< rhs_byte_type, std::byte > ||
-                 std::is_same_v< rhs_byte_type, std::byte const >
+    template< raks::nibble::basal rhs_byte_type >
     bool operator==( base_ref< rhs_byte_type > const& rhs ) const
     {
         return this->operator raks::dt::nibble() ==
                static_cast< raks::dt::nibble >( rhs );
     }
 
-    template< typename rhs_byte_type >
-        requires std::is_same_v< rhs_byte_type, std::byte > ||
-                 std::is_same_v< rhs_byte_type, std::byte const >
+    template< raks::nibble::basal rhs_byte_type >
     bool operator!=( base_ref< rhs_byte_type > const& rhs ) const
     {
         return this->operator raks::dt::nibble() !=
@@ -146,32 +144,27 @@ private:
         if( base_type::get_is_high() )
         {
             *base_type::get_ptr() =
-              ( *base_type::get_ptr() & nibble::bit_mask ) |
-              ( rval.get_impl() << nibble::bit_size );
+              ( *base_type::get_ptr() & raks::dt::nibble::bit_mask ) |
+              ( rval.get_impl() << raks::dt::nibble::bit_size );
         }
         else
         {
             *base_type::get_ptr() =
-              ( *base_type::get_ptr() & ( ~nibble::bit_mask ) ) |
+              ( *base_type::get_ptr() & ( ~raks::dt::nibble::bit_mask ) ) |
               rval.get_impl();
         }
         return *this;
     }
 };
 
-template< typename byte_type >
-    requires std::is_same_v< byte_type, std::byte > ||
-             std::is_same_v< byte_type, std::byte const >
+template< raks::nibble::basal byte_type >
 class base_ptr : public base< byte_type >
 {
 public:
     using base_type = base< byte_type >;
     using pointer = base_ptr;
 
-    using element_type = std::conditional_t<
-      std::is_const_v< byte_type >,
-      raks::dt::nibble const,
-      raks::dt::nibble >;
+    using element_type = raks::nibble::value_type< byte_type >;
 
     using difference_type = std::ptrdiff_t;
 
@@ -201,9 +194,7 @@ public:
         );
     }
 
-    template< typename rhs_byte_type >
-        requires std::is_same_v< rhs_byte_type, std::byte > ||
-                 std::is_same_v< rhs_byte_type, std::byte const >
+    template< raks::nibble::basal rhs_byte_type >
     friend std::strong_ordering operator<=>(
       base_ptr const lhs, base_ptr< rhs_byte_type > const rhs
     )
@@ -216,9 +207,7 @@ public:
         return lhs.is_high() <=> rhs.is_high();
     }
 
-    template< typename rhs_byte_type >
-        requires std::is_same_v< rhs_byte_type, std::byte > ||
-                 std::is_same_v< rhs_byte_type, std::byte const >
+    template< raks::nibble::basal rhs_byte_type >
     friend bool operator==(
       base_ptr const lhs, base_ptr< rhs_byte_type > const rhs
     )
@@ -227,9 +216,7 @@ public:
                lhs.get_is_high() == rhs.get_is_high();
     }
 
-    template< typename rhs_byte_type >
-        requires std::is_same_v< rhs_byte_type, std::byte > ||
-                 std::is_same_v< rhs_byte_type, std::byte const >
+    template< raks::nibble::basal rhs_byte_type >
     friend bool operator!=(
       base_ptr const lhs, base_ptr< rhs_byte_type > const rhs
     )
@@ -239,9 +226,7 @@ public:
     }
 };
 
-template< typename byte_type >
-    requires std::is_same_v< byte_type, std::byte > ||
-             std::is_same_v< byte_type, std::byte const >
+template< raks::nibble::basal byte_type >
 base_ref< byte_type >::pointer base_ref< byte_type >::operator&() const
 {
     return base_ref< byte_type >::pointer(
@@ -249,12 +234,27 @@ base_ref< byte_type >::pointer base_ref< byte_type >::operator&() const
     );
 }
 } // namespace private_proxy
-using const_reference = raks::dt::private_proxy::base_ref< std::byte const >;
-using const_pointer = raks::dt::private_proxy::base_ptr< std::byte const >;
+using const_reference =
+  raks::nibble::private_proxy::base_ref< std::byte const >;
+using const_pointer = raks::nibble::private_proxy::base_ptr< std::byte const >;
 
-using reference = raks::dt::private_proxy::base_ref< std::byte >;
-using pointer = raks::dt::private_proxy::base_ptr< std::byte >;
+using reference = raks::nibble::private_proxy::base_ref< std::byte >;
+using pointer = raks::nibble::private_proxy::base_ptr< std::byte >;
 
-} // namespace raks::dt
+template< raks::nibble::basal byte_type >
+struct proxy_traits
+{
+    using reference_type = std::conditional_t<
+      std::is_const_v< byte_type >,
+      raks::nibble::const_reference,
+      raks::nibble::reference >;
 
-#endif // RAKS_DT_NIBBLE_PROXY_INCLUDED
+    using pointer_type = std::conditional_t<
+      std::is_const_v< byte_type >,
+      raks::nibble::const_pointer,
+      raks::nibble::pointer >;
+};
+
+} // namespace raks::nibble
+
+#endif // RAKS_NIBBLE_PROXY_INCLUDED

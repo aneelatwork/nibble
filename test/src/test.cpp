@@ -79,10 +79,10 @@ TEST( NibbleTest, Equality )
 TEST( NibbleRefTest, RValue )
 {
     auto testval = std::array< std::byte, 2 >();
-    auto ref1 = raks::dt::reference( &testval[ 0 ], false ); // NOLINT
-    auto ref2 = raks::dt::reference( &testval[ 0 ], true );  // NOLINT
-    auto ref3 = raks::dt::reference( &testval[ 1 ], false ); // NOLINT
-    auto ref4 = raks::dt::reference( &testval[ 1 ], true );  // NOLINT
+    auto ref1 = raks::nibble::reference( &testval[ 0 ], false ); // NOLINT
+    auto ref2 = raks::nibble::reference( &testval[ 0 ], true );  // NOLINT
+    auto ref3 = raks::nibble::reference( &testval[ 1 ], false ); // NOLINT
+    auto ref4 = raks::nibble::reference( &testval[ 1 ], true );  // NOLINT
     ref1 = raks::dt::nibble( 'A' );
     ref2 = raks::dt::nibble( '5' );
     ref3 = raks::dt::nibble( 'E' );
@@ -99,9 +99,9 @@ TEST( NibbleRefTest, RValue )
 // TODO
 TEST( NibbleRefTest, NibbleEquality )
 {
-    auto testval = std::byte( 0xc6 );                        // NOLINT
-    auto ref1 = raks::dt::reference( &testval, false );      // NOLINT
-    auto ref2 = raks::dt::const_reference( &testval, true ); // NOLINT
+    auto testval = std::byte( 0xc6 );                            // NOLINT
+    auto ref1 = raks::nibble::reference( &testval, false );      // NOLINT
+    auto ref2 = raks::nibble::const_reference( &testval, true ); // NOLINT
 
     auto nib1 = raks::dt::nibble( 'C' );
     auto nib2 = raks::dt::nibble( 6UL ); // NOLINT
@@ -136,10 +136,10 @@ TEST( NibbleRefTest, NibbleRefEquality )
       },
     };
 
-    auto ref1 = raks::dt::reference( &testval[ 0 ], false );      // NOLINT
-    auto ref2 = raks::dt::const_reference( &testval[ 0 ], true ); // NOLINT
-    auto ref3 = raks::dt::reference( &testval[ 1 ], false );      // NOLINT
-    auto ref4 = raks::dt::const_reference( &testval[ 1 ], true ); // NOLINT
+    auto ref1 = raks::nibble::reference( &testval[ 0 ], false );      // NOLINT
+    auto ref2 = raks::nibble::const_reference( &testval[ 0 ], true ); // NOLINT
+    auto ref3 = raks::nibble::reference( &testval[ 1 ], false );      // NOLINT
+    auto ref4 = raks::nibble::const_reference( &testval[ 1 ], true ); // NOLINT
 
     EXPECT_TRUE( ref1 == ref1 );
     EXPECT_FALSE( ref4 != ref4 );
@@ -161,10 +161,10 @@ TEST( NibbleRefTest, NibbleRefEquality )
 TEST( NibblePtrTest, Rvalue )
 {
     auto testval = std::array< std::byte, 2 >();
-    auto ptr1 = raks::dt::pointer( &testval[ 0 ], false ); // NOLINT
-    auto ptr2 = raks::dt::pointer( &testval[ 0 ], true );  // NOLINT
-    auto ptr3 = raks::dt::pointer( &testval[ 1 ], false ); // NOLINT
-    auto ptr4 = raks::dt::pointer( &testval[ 1 ], true );  // NOLINT
+    auto ptr1 = raks::nibble::pointer( &testval[ 0 ], false ); // NOLINT
+    auto ptr2 = raks::nibble::pointer( &testval[ 0 ], true );  // NOLINT
+    auto ptr3 = raks::nibble::pointer( &testval[ 1 ], false ); // NOLINT
+    auto ptr4 = raks::nibble::pointer( &testval[ 1 ], true );  // NOLINT
     *ptr1 = raks::dt::nibble( '4' );
     *ptr2 = raks::dt::nibble( 'b' );
     *ptr3 = raks::dt::nibble( 'F' );
@@ -188,9 +188,9 @@ TEST( NibblePtrTest, Rvalue )
 
 TEST( NibblePtrTest, NibbleEquality )
 {
-    auto testval = std::byte( 0xc6 );                      // NOLINT
-    auto ptr1 = raks::dt::pointer( &testval, false );      // NOLINT
-    auto ptr2 = raks::dt::const_pointer( &testval, true ); // NOLINT
+    auto testval = std::byte( 0xc6 );                          // NOLINT
+    auto ptr1 = raks::nibble::pointer( &testval, false );      // NOLINT
+    auto ptr2 = raks::nibble::const_pointer( &testval, true ); // NOLINT
 
     auto nib1 = raks::dt::nibble( 'C' );
     auto nib2 = raks::dt::nibble( 6UL ); // NOLINT
@@ -225,10 +225,10 @@ TEST( NibblePtrTest, NibbleRefEquality )
       },
     };
 
-    auto ptr1 = raks::dt::pointer( &testval[ 0 ], false );      // NOLINT
-    auto ptr2 = raks::dt::const_pointer( &testval[ 0 ], true ); // NOLINT
-    auto ptr3 = raks::dt::pointer( &testval[ 1 ], false );      // NOLINT
-    auto ptr4 = raks::dt::const_pointer( &testval[ 1 ], true ); // NOLINT
+    auto ptr1 = raks::nibble::pointer( &testval[ 0 ], false );      // NOLINT
+    auto ptr2 = raks::nibble::const_pointer( &testval[ 0 ], true ); // NOLINT
+    auto ptr3 = raks::nibble::pointer( &testval[ 1 ], false );      // NOLINT
+    auto ptr4 = raks::nibble::const_pointer( &testval[ 1 ], true ); // NOLINT
 
     EXPECT_TRUE( *ptr1 == *ptr1 );
     EXPECT_FALSE( *ptr4 != *ptr4 );
@@ -251,12 +251,12 @@ TEST( NibblePtrTest, NibblePtrEquality )
 {
     auto testval = std::byte( 0xc6 ); // NOLINT
 
-    auto nptr1 = raks::dt::pointer( &testval, false );       // NOLINT
-    auto nptr2 = raks::dt::pointer( &testval, false );       // NOLINT
-    auto cptr1 = raks::dt::const_pointer( &testval, false ); // NOLINT
-    auto cptr2 = raks::dt::const_pointer( &testval, false ); // NOLINT
-    auto nptr3 = raks::dt::pointer( &testval, true );        // NOLINT
-    auto cptr3 = raks::dt::const_pointer( &testval, true );  // NOLINT
+    auto nptr1 = raks::nibble::pointer( &testval, false );       // NOLINT
+    auto nptr2 = raks::nibble::pointer( &testval, false );       // NOLINT
+    auto cptr1 = raks::nibble::const_pointer( &testval, false ); // NOLINT
+    auto cptr2 = raks::nibble::const_pointer( &testval, false ); // NOLINT
+    auto nptr3 = raks::nibble::pointer( &testval, true );        // NOLINT
+    auto cptr3 = raks::nibble::const_pointer( &testval, true );  // NOLINT
 
     EXPECT_TRUE( nptr1 == nptr1 );
     EXPECT_TRUE( cptr2 == cptr2 );
